@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Basket.Infrastructure;
 using Newtonsoft.Json;
 
 namespace Basket
@@ -18,11 +19,14 @@ namespace Basket
             var amountTotal = 0;
             foreach (var basketLineArticle in basketLineArticles)
             {
+                IArticleDatabse articleDatabase;
 #if DEBUG
-                var article = GetArticleDatabaseMock(basketLineArticle.Id);
+                articleDatabase = new ArticleDatabaseJson();
 #else
-                var article = GetArticleDatabase(basketLineArticle.Id);
+                articleDatabase = new ArticleDatabaseMock();
 #endif
+                
+                var article = articleDatabase.GetArticle(basketLineArticle.Id);
                 // Calculate amount
                 var amount = 0;
                 switch (article.Category)
@@ -44,45 +48,5 @@ namespace Basket
             return amountTotal;
         }
 
-        private static ArticleDatabase GetArticleDatabase(String id)
-        {
-            // Retrive article from database
-            var codeBase = Assembly.GetExecutingAssembly().CodeBase;
-            var uri = new UriBuilder(codeBase);
-            var path = Uri.UnescapeDataString(uri.Path);
-            var assemblyDirectory = Path.GetDirectoryName(path);
-            var jsonPath = Path.Combine(assemblyDirectory, "article-database.json");
-
-            var deserializeObject = JsonConvert.DeserializeObject<List<ArticleDatabase>>(File.ReadAllText(jsonPath));
-            IList<ArticleDatabase> articleDatabases =
-                deserializeObject;
-            var article = articleDatabases.First(articleDatabase =>
-                articleDatabase.Id == id);
-            return article;
-        }
-        
-        public static ArticleDatabase GetArticleDatabaseMock(string id)
-        {
-            switch (id)
-            {
-                case "1":
-                    return new ArticleDatabase {Id = "1", Price = 1, Stock =
-                        35, Label = "Banana", Category = "food"};
-                case "2":
-                    return new ArticleDatabase
-                    {
-                        Id = "2",
-                        Price = 500,
-                        Stock = 20,
-                        Label = "Fridge electrolux",
-                        Category = "electronic"
-                    };
-                case "3":
-                    return new ArticleDatabase {Id = "3", Price = 49, Stock =
-                        68, Label = "Chair", Category = "desktop"};
-                default:
-                    throw new NotImplementedException();
-            }
-        }
     }
 }

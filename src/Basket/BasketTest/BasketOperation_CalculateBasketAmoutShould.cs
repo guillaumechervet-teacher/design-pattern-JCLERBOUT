@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Basket;
+using Basket.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -39,6 +40,13 @@ namespace BasketTest
                             },
                             ExpectedPrice = 37520}
                     },
+                    new object[] {
+                        new BasketTest(){ BasketLineArticles = new List<BasketLineArticle>
+                            {
+                                new BasketLineArticle {Id = "4", Number = 2, Label = "Grumlys"},
+                            },
+                            ExpectedPrice = 8640}
+                    },
                 };
 
             }
@@ -48,9 +56,11 @@ namespace BasketTest
         [DynamicData("Baskets")]
         public void ReturnCorrectAmoutGivenBasket(BasketTest basketTest)
         {
-            var amountTotal = ImperativeProgramming.CalculateBasketAmount(basketTest.BasketLineArticles);
+            var basKetService = new BasketService(new ArticleDatabaseMock());
+            // var basKetService = new BasketService(new ArticleDatabaseJson());
+            var basketOperation = new BasketOperation(basKetService);
+            var amountTotal = basketOperation.CalculateAmout(basketTest.BasketLineArticles);
             Assert.AreEqual(amountTotal, basketTest.ExpectedPrice);
         }
-        
     }
 }
