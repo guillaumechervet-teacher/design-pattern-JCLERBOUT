@@ -62,5 +62,16 @@ namespace BasketTest
             var amountTotal = basketOperation.CalculateAmout(basketTest.BasketLineArticles);
             Assert.AreEqual(amountTotal, basketTest.ExpectedPrice);
         }
+        
+        [TestMethod]
+        public void ReturnCorrectAmoutGivenBasketLine()
+        {
+            var basketLineArticle = new BasketLineArticle {Id = "4", Number = 2,
+                Label = "Grumy"};
+            var basKetService = new BasketService(new ArticleDatabaseMock());
+            var basketOperation = new BasketOperation(basKetService);
+            var amountTotal = basketOperation.CalculateAmout(basketLineArticle);
+            Assert.AreEqual(amountTotal, 8640);
+        }
     }
 }
